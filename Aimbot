@@ -1,0 +1,253 @@
+-- Dark Blue Sky AimHead Full - Player Only + Closest Target
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- Persistent GUI
+local function createGUI()
+    if player.PlayerGui:FindFirstChild("DarkBlueAimHeadMenu") then return end
+
+    local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+    ScreenGui.Name = "DarkBlueAimHeadMenu"
+    ScreenGui.ResetOnSpawn = false
+
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = UDim2.new(0,300,0,240)
+    MainFrame.Position = UDim2.new(0.5,-150,0.5,-120)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(0,51,102) -- xanh nước đậm
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    local corner = Instance.new("UICorner", MainFrame)
+    corner.CornerRadius = UDim.new(0,15)
+
+    -- Minimize button
+    local MinBtn = Instance.new("TextButton", MainFrame)
+    MinBtn.Size = UDim2.new(0,30,0,30)
+    MinBtn.Position = UDim2.new(1,-35,0,5)
+    MinBtn.BackgroundColor3 = Color3.fromRGB(0,26,51)
+    MinBtn.Text = "-"
+    MinBtn.TextColor3 = Color3.new(1,1,1)
+    MinBtn.Font = Enum.Font.GothamBold
+    MinBtn.TextSize = 20
+    local cornerMin = Instance.new("UICorner", MinBtn)
+    cornerMin.CornerRadius = UDim.new(0,5)
+
+    local Title = Instance.new("TextLabel", MainFrame)
+    Title.Size = UDim2.new(1,0,0,40)
+    Title.BackgroundTransparency = 1
+    Title.Text = "💧 Dark Blue AimHead"
+    Title.TextColor3 = Color3.new(1,1,1)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 20
+
+    -- Tabs
+    local TabBar = Instance.new("Frame", MainFrame)
+    TabBar.Size = UDim2.new(1,0,0,30)
+    TabBar.Position = UDim2.new(0,0,0,40)
+    TabBar.BackgroundTransparency = 1
+
+    local MainTab = Instance.new("TextButton", TabBar)
+    MainTab.Size = UDim2.new(0.5,0,1,0)
+    MainTab.Text = "Main"
+    MainTab.BackgroundTransparency = 1
+    MainTab.TextColor3 = Color3.new(1,1,1)
+    MainTab.Font = Enum.Font.GothamBold
+    MainTab.TextSize = 16
+
+    local SettingTab = Instance.new("TextButton", TabBar)
+    SettingTab.Size = UDim2.new(0.5,0,1,0)
+    SettingTab.Position = UDim2.new(0.5,0,0,0)
+    SettingTab.Text = "Settings"
+    SettingTab.BackgroundTransparency = 1
+    SettingTab.TextColor3 = Color3.new(1,1,1)
+    SettingTab.Font = Enum.Font.GothamBold
+    SettingTab.TextSize = 16
+
+    -- Pages
+    local MainPage = Instance.new("Frame", MainFrame)
+    MainPage.Size = UDim2.new(1,0,1,-70)
+    MainPage.Position = UDim2.new(0,0,0,70)
+    MainPage.BackgroundTransparency = 1
+
+    local SettingPage = Instance.new("Frame", MainFrame)
+    SettingPage.Size = MainPage.Size
+    SettingPage.Position = MainPage.Position
+    SettingPage.BackgroundTransparency = 1
+    SettingPage.Visible = false
+
+    -- Helper function
+    local function makeButton(parent,text,pos)
+        local btn = Instance.new("TextButton",parent)
+        btn.Size = UDim2.new(0.8,0,0,30)
+        btn.Position = pos
+        btn.BackgroundColor3 = Color3.fromRGB(0,26,51)
+        btn.Text = text
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 16
+        local corner = Instance.new("UICorner",btn)
+        corner.CornerRadius = UDim.new(0,8)
+        return btn
+    end
+
+    -- Main buttons
+    local AimHeadToggle = makeButton(MainPage,"AimHead: OFF",UDim2.new(0.1,0,0,10))
+    local CheckTeamToggle = makeButton(MainPage,"Check Team: OFF",UDim2.new(0.1,0,0,50))
+    local CheckFriendToggle = makeButton(MainPage,"Check Friends: OFF",UDim2.new(0.1,0,0,90))
+    local CheckWallToggle = makeButton(MainPage,"Check Wall: ON",UDim2.new(0.1,0,0,130))
+
+    -- Settings
+    local FOVLabel = Instance.new("TextLabel",SettingPage)
+    FOVLabel.Size = UDim2.new(0.8,0,0,30)
+    FOVLabel.Position = UDim2.new(0.1,0,0,10)
+    FOVLabel.BackgroundTransparency = 1
+    FOVLabel.Text = "AimHead FOV:"
+    FOVLabel.TextColor3 = Color3.new(1,1,1)
+    FOVLabel.Font = Enum.Font.GothamBold
+    FOVLabel.TextSize = 16
+
+    local FOVBox = Instance.new("TextBox",SettingPage)
+    FOVBox.Size = UDim2.new(0.8,0,0,30)
+    FOVBox.Position = UDim2.new(0.1,0,0,50)
+    FOVBox.BackgroundColor3 = Color3.fromRGB(0,26,51)
+    FOVBox.Text = "100"
+    FOVBox.TextColor3 = Color3.new(1,1,1)
+    FOVBox.Font = Enum.Font.GothamBold
+    FOVBox.TextSize = 16
+    local corner2 = Instance.new("UICorner",FOVBox)
+    corner2.CornerRadius = UDim.new(0,8)
+
+    -- Tab switching
+    MainTab.MouseButton1Click:Connect(function()
+        MainPage.Visible = true
+        SettingPage.Visible = false
+    end)
+    SettingTab.MouseButton1Click:Connect(function()
+        MainPage.Visible = false
+        SettingPage.Visible = true
+    end)
+
+    -- Toggle states
+    local aimOn, teamCheck, friendCheck, wallCheck = false,false,false,true
+
+    -- FOV Circle
+    local FOVCircle = Drawing.new("Circle")
+    FOVCircle.Visible = false
+    FOVCircle.Color = Color3.fromRGB(0,153,255)
+    FOVCircle.Thickness = 2
+    FOVCircle.NumSides = 100
+    FOVCircle.Filled = false
+
+    AimHeadToggle.MouseButton1Click:Connect(function()
+        aimOn = not aimOn
+        AimHeadToggle.Text = "AimHead: "..(aimOn and "ON" or "OFF")
+        FOVCircle.Visible = aimOn
+    end)
+    CheckTeamToggle.MouseButton1Click:Connect(function()
+        teamCheck = not teamCheck
+        CheckTeamToggle.Text = "Check Team: "..(teamCheck and "ON" or "OFF")
+    end)
+    CheckFriendToggle.MouseButton1Click:Connect(function()
+        friendCheck = not friendCheck
+        CheckFriendToggle.Text = "Check Friends: "..(friendCheck and "ON" or "OFF")
+    end)
+    CheckWallToggle.MouseButton1Click:Connect(function()
+        wallCheck = not wallCheck
+        CheckWallToggle.Text = "Check Wall: "..(wallCheck and "ON" or "OFF")
+    end)
+
+    -- Minimize
+    local isMinimized = false
+    local miniFrame = nil
+    MinBtn.MouseButton1Click:Connect(function()
+        if not isMinimized then
+            isMinimized = true
+            MainFrame.Visible = false
+            miniFrame = Instance.new("TextButton", ScreenGui)
+            miniFrame.Size = UDim2.new(0,120,0,30)
+            miniFrame.Position = MainFrame.Position
+            miniFrame.Text = "Dark Blue Menu"
+            miniFrame.BackgroundColor3 = Color3.fromRGB(0,51,102)
+            miniFrame.TextColor3 = Color3.new(1,1,1)
+            miniFrame.Font = Enum.Font.GothamBold
+            miniFrame.TextSize = 14
+            local corner = Instance.new("UICorner", miniFrame)
+            corner.CornerRadius = UDim.new(0,8)
+            miniFrame.MouseButton1Click:Connect(function()
+                MainFrame.Visible = true
+                miniFrame:Destroy()
+                isMinimized = false
+            end)
+        end
+    end)
+
+    -- AimHead logic
+    local function getClosestPlayer()
+        local closestPlayer = nil
+        local shortestDistance = tonumber(FOVBox.Text) or 100
+        local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
+                if (not friendCheck or not player:IsFriendsWith(plr.UserId)) and
+                   (not teamCheck or plr.Team ~= player.Team) then
+                    local headPos = plr.Character.Head.Position
+                    local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
+                    local distance = (Vector2.new(screenPos.X,screenPos.Y)-center).Magnitude
+
+                    if distance <= shortestDistance and onScreen then
+                        local canSee = true
+                        if wallCheck then
+                            local rayParams = RaycastParams.new()
+                            rayParams.FilterDescendantsInstances = {player.Character}
+                            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+                            local ray = Workspace:Raycast(Camera.CFrame.Position, headPos - Camera.CFrame.Position, rayParams)
+                            if ray and ray.Instance and not ray.Instance:IsDescendantOf(plr.Character) then
+                                canSee = false
+                            end
+                        end
+                        if canSee then
+                            shortestDistance = distance
+                            closestPlayer = plr
+                        end
+                    end
+                end
+            end
+        end
+        return closestPlayer
+    end
+
+    -- RenderStepped update
+    RunService.RenderStepped:Connect(function()
+        FOVCircle.Position = Vector2.new(Camera.ViewportSize.X/2,Camera.ViewportSize.Y/2)
+        FOVCircle.Radius = tonumber(FOVBox.Text) or 100
+
+        if aimOn then
+            local target = getClosestPlayer()
+            if target and target.Character and target.Character:FindFirstChild("Head") then
+                Camera.CFrame = CFrame.new(Camera.CFrame.Position,target.Character.Head.Position)
+            end
+        end
+    end)
+
+    -- Hotkey M toggle GUI
+    UIS.InputBegan:Connect(function(input,gp)
+        if gp then return end
+        if input.KeyCode == Enum.KeyCode.M then
+            MainFrame.Visible = not MainFrame.Visible
+            if miniFrame then miniFrame.Visible = not miniFrame.Visible end
+        end
+    end)
+end
+
+-- Initial GUI
+createGUI()
+
+-- Persist GUI after respawn
+player.CharacterAdded:Connect(function()
+    wait(1)
+    createGUI()
+end)
