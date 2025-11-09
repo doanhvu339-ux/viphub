@@ -1,4 +1,4 @@
--- Dark Blue Sky AimHead Full - Player Only + Closest Target
+-- Dark Blue AimBody Full - Aim Torso/Body Only
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -8,10 +8,10 @@ local Camera = Workspace.CurrentCamera
 
 -- Persistent GUI
 local function createGUI()
-    if player.PlayerGui:FindFirstChild("DarkBlueAimHeadMenu") then return end
+    if player.PlayerGui:FindFirstChild("DarkBlueAimBodyMenu") then return end
 
     local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-    ScreenGui.Name = "DarkBlueAimHeadMenu"
+    ScreenGui.Name = "DarkBlueAimBodyMenu"
     ScreenGui.ResetOnSpawn = false
 
     local MainFrame = Instance.new("Frame", ScreenGui)
@@ -39,7 +39,7 @@ local function createGUI()
     local Title = Instance.new("TextLabel", MainFrame)
     Title.Size = UDim2.new(1,0,0,40)
     Title.BackgroundTransparency = 1
-    Title.Text = "💧 Dark Blue AimHead"
+    Title.Text = "💧 Dark Blue AimBody"
     Title.TextColor3 = Color3.new(1,1,1)
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 20
@@ -95,7 +95,7 @@ local function createGUI()
     end
 
     -- Main buttons
-    local AimHeadToggle = makeButton(MainPage,"AimHead: OFF",UDim2.new(0.1,0,0,10))
+    local AimBodyToggle = makeButton(MainPage,"AimBody: OFF",UDim2.new(0.1,0,0,10))
     local CheckTeamToggle = makeButton(MainPage,"Check Team: OFF",UDim2.new(0.1,0,0,50))
     local CheckFriendToggle = makeButton(MainPage,"Check Friends: OFF",UDim2.new(0.1,0,0,90))
     local CheckWallToggle = makeButton(MainPage,"Check Wall: ON",UDim2.new(0.1,0,0,130))
@@ -105,7 +105,7 @@ local function createGUI()
     FOVLabel.Size = UDim2.new(0.8,0,0,30)
     FOVLabel.Position = UDim2.new(0.1,0,0,10)
     FOVLabel.BackgroundTransparency = 1
-    FOVLabel.Text = "AimHead FOV:"
+    FOVLabel.Text = "AimBody FOV:"
     FOVLabel.TextColor3 = Color3.new(1,1,1)
     FOVLabel.Font = Enum.Font.GothamBold
     FOVLabel.TextSize = 16
@@ -142,9 +142,9 @@ local function createGUI()
     FOVCircle.NumSides = 100
     FOVCircle.Filled = false
 
-    AimHeadToggle.MouseButton1Click:Connect(function()
+    AimBodyToggle.MouseButton1Click:Connect(function()
         aimOn = not aimOn
-        AimHeadToggle.Text = "AimHead: "..(aimOn and "ON" or "OFF")
+        AimBodyToggle.Text = "AimBody: "..(aimOn and "ON" or "OFF")
         FOVCircle.Visible = aimOn
     end)
     CheckTeamToggle.MouseButton1Click:Connect(function()
@@ -185,33 +185,35 @@ local function createGUI()
         end
     end)
 
-    -- AimHead logic
+    -- AimBody logic
     local function getClosestPlayer()
         local closestPlayer = nil
         local shortestDistance = tonumber(FOVBox.Text) or 100
         local center = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
         for _, plr in pairs(Players:GetPlayers()) do
-            if plr ~= player and plr.Character and plr.Character:FindFirstChild("Head") then
-                if (not friendCheck or not player:IsFriendsWith(plr.UserId)) and
-                   (not teamCheck or plr.Team ~= player.Team) then
-                    local headPos = plr.Character.Head.Position
-                    local screenPos, onScreen = Camera:WorldToViewportPoint(headPos)
-                    local distance = (Vector2.new(screenPos.X,screenPos.Y)-center).Magnitude
+            if plr ~= player and plr.Character then
+                local torso = plr.Character:FindFirstChild("UpperTorso") or plr.Character:FindFirstChild("HumanoidRootPart")
+                if torso then
+                    if (not friendCheck or not player:IsFriendsWith(plr.UserId)) and
+                       (not teamCheck or plr.Team ~= player.Team) then
+                        local screenPos, onScreen = Camera:WorldToViewportPoint(torso.Position)
+                        local distance = (Vector2.new(screenPos.X,screenPos.Y)-center).Magnitude
 
-                    if distance <= shortestDistance and onScreen then
-                        local canSee = true
-                        if wallCheck then
-                            local rayParams = RaycastParams.new()
-                            rayParams.FilterDescendantsInstances = {player.Character}
-                            rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-                            local ray = Workspace:Raycast(Camera.CFrame.Position, headPos - Camera.CFrame.Position, rayParams)
-                            if ray and ray.Instance and not ray.Instance:IsDescendantOf(plr.Character) then
-                                canSee = false
+                        if distance <= shortestDistance and onScreen then
+                            local canSee = true
+                            if wallCheck then
+                                local rayParams = RaycastParams.new()
+                                rayParams.FilterDescendantsInstances = {player.Character}
+                                rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+                                local ray = Workspace:Raycast(Camera.CFrame.Position, torso.Position - Camera.CFrame.Position, rayParams)
+                                if ray and ray.Instance and not ray.Instance:IsDescendantOf(plr.Character) then
+                                    canSee = false
+                                end
                             end
-                        end
-                        if canSee then
-                            shortestDistance = distance
-                            closestPlayer = plr
+                            if canSee then
+                                shortestDistance = distance
+                                closestPlayer = plr
+                            end
                         end
                     end
                 end
@@ -227,8 +229,11 @@ local function createGUI()
 
         if aimOn then
             local target = getClosestPlayer()
-            if target and target.Character and target.Character:FindFirstChild("Head") then
-                Camera.CFrame = CFrame.new(Camera.CFrame.Position,target.Character.Head.Position)
+            if target and target.Character then
+                local torso = target.Character:FindFirstChild("UpperTorso") or target.Character:FindFirstChild("HumanoidRootPart")
+                if torso then
+                    Camera.CFrame = CFrame.new(Camera.CFrame.Position, torso.Position)
+                end
             end
         end
     end)
