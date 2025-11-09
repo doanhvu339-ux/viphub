@@ -1,0 +1,111 @@
+-- ===== Tab 4: Settings =====
+local settingsFrame = Instance.new("Frame")
+settingsFrame.Size = UDim2.new(1,0,1,0)
+settingsFrame.BackgroundTransparency = 1
+settingsFrame.Visible = false
+settingsFrame.Parent = tabContainer
+
+-- Label Speed
+local speedLabel = Instance.new("TextLabel")
+speedLabel.Size = UDim2.new(0, 100, 0, 30)
+speedLabel.Position = UDim2.new(0,10,0,10)
+speedLabel.Text = "WalkSpeed"
+speedLabel.TextColor3 = TEXT_COLOR
+speedLabel.BackgroundTransparency = 1
+speedLabel.Font = Enum.Font.SourceSansBold
+speedLabel.TextScaled = true
+speedLabel.Parent = settingsFrame
+
+-- TextBox Speed
+local speedBox = Instance.new("TextBox")
+speedBox.Size = UDim2.new(0, 100, 0, 30)
+speedBox.Position = UDim2.new(0,120,0,10)
+speedBox.BackgroundColor3 = MENU_COLOR
+speedBox.TextColor3 = TEXT_COLOR
+speedBox.Font = Enum.Font.SourceSansBold
+speedBox.TextScaled = true
+speedBox.Text = tostring(humanoid.WalkSpeed)
+speedBox.ClearTextOnFocus = false
+speedBox.Parent = settingsFrame
+
+-- Viền và bo góc
+local speedBoxCorner = Instance.new("UICorner")
+speedBoxCorner.CornerRadius = UDim.new(0, 8)
+speedBoxCorner.Parent = speedBox
+local speedBoxStroke = Instance.new("UIStroke")
+speedBoxStroke.Color = BORDER_COLOR
+speedBoxStroke.Thickness = 2
+speedBoxStroke.Parent = speedBox
+
+-- Label Hitbox
+local hitboxLabel = Instance.new("TextLabel")
+hitboxLabel.Size = UDim2.new(0, 100, 0, 30)
+hitboxLabel.Position = UDim2.new(0,10,0,60)
+hitboxLabel.Text = "Hitbox Size"
+hitboxLabel.TextColor3 = TEXT_COLOR
+hitboxLabel.BackgroundTransparency = 1
+hitboxLabel.Font = Enum.Font.SourceSansBold
+hitboxLabel.TextScaled = true
+hitboxLabel.Parent = settingsFrame
+
+-- TextBox Hitbox
+local hitboxBox = Instance.new("TextBox")
+hitboxBox.Size = UDim2.new(0, 100, 0, 30)
+hitboxBox.Position = UDim2.new(0,120,0,60)
+hitboxBox.BackgroundColor3 = MENU_COLOR
+hitboxBox.TextColor3 = TEXT_COLOR
+hitboxBox.Font = Enum.Font.SourceSansBold
+hitboxBox.TextScaled = true
+hitboxBox.Text = "1.5" -- giá trị nhân hitbox mặc định
+hitboxBox.ClearTextOnFocus = false
+hitboxBox.Parent = settingsFrame
+
+-- Viền và bo góc
+local hitboxBoxCorner = Instance.new("UICorner")
+hitboxBoxCorner.CornerRadius = UDim.new(0, 8)
+hitboxBoxCorner.Parent = hitboxBox
+local hitboxBoxStroke = Instance.new("UIStroke")
+hitboxBoxStroke.Color = BORDER_COLOR
+hitboxBoxStroke.Thickness = 2
+hitboxBoxStroke.Parent = hitboxBox
+
+-- Cập nhật giá trị khi thay đổi
+speedBox.FocusLost:Connect(function(enter)
+    local val = tonumber(speedBox.Text)
+    if val then
+        humanoid.WalkSpeed = val
+    else
+        speedBox.Text = tostring(humanoid.WalkSpeed)
+    end
+end)
+
+hitboxBox.FocusLost:Connect(function(enter)
+    local val = tonumber(hitboxBox.Text)
+    if val and hitboxEnabled then
+        -- áp dụng tất cả người chơi
+        for _, plr in pairs(Players:GetPlayers()) do
+            if plr ~= player then
+                local char = plr.Character
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.Size = part.Size.Unit * val
+                        end
+                    end
+                end
+            end
+        end
+    else
+        hitboxBox.Text = "1.5"
+    end
+end)
+
+-- Tab 4 button
+local tabSettingsBtn = createTabButton(Menu, "Settings", UDim2.new(1,5,0,0))
+
+tabSettingsBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    visorsFrame.Visible = false
+    scriptsFrame.Visible = false
+    settingsFrame.Visible = true
+end)
