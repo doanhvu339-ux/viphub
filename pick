@@ -1,0 +1,105 @@
+--// Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+--// Variables
+local autoClick = false
+local clickInterval = 0.1 -- 0.1 giây
+local lastClick = 0
+
+--// GUI Setup
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "BlueSkyAutoClicker"
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 80)
+frame.Position = UDim2.new(0.5, -100, 0.5, -40)
+frame.BackgroundColor3 = Color3.fromRGB(135, 206, 235) -- BlueSky
+frame.BorderSizePixel = 0
+frame.ClipsDescendants = true
+frame.Parent = screenGui
+frame.AnchorPoint = Vector2.new(0.5, 0.5)
+frame.Visible = true
+frame.BackgroundTransparency = 0.1
+frame.AutoButtonColor = false
+frame.RoundedCorner = true
+
+-- Bo góc bằng UIStroke + UICorner
+local uicorner = Instance.new("UICorner")
+uicorner.CornerRadius = UDim.new(0, 12)
+uicorner.Parent = frame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 25)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "BlueSky AutoClicker"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Parent = frame
+
+-- Toggle Button
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0.8, 0, 0, 40)
+toggleButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+toggleButton.BackgroundColor3 = Color3.fromRGB(100, 149, 237) -- Button Blue
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 16
+toggleButton.Text = "AutoClick: OFF"
+toggleButton.Parent = frame
+
+local toggleUICorner = Instance.new("UICorner")
+toggleUICorner.CornerRadius = UDim.new(0, 8)
+toggleUICorner.Parent = toggleButton
+
+-- Toggle Function
+toggleButton.MouseButton1Click:Connect(function()
+    autoClick = not autoClick
+    toggleButton.Text = autoClick and "AutoClick: ON" or "AutoClick: OFF"
+end)
+
+-- Auto Click Logic
+RunService.RenderStepped:Connect(function(deltaTime)
+    if autoClick then
+        if tick() - lastClick >= clickInterval then
+            lastClick = tick()
+            -- Click giữa màn hình
+            local x = workspace.CurrentCamera.ViewportSize.X / 2
+            local y = workspace.CurrentCamera.ViewportSize.Y / 2
+            -- Kích hoạt Click giả lập
+            mouse1click()
+        end
+    end
+end)
+
+-- Giả lập click giữa màn hình
+function mouse1click()
+    local Mouse = player:GetMouse()
+    -- Dùng fireclickdetector nếu muốn click object
+    -- Ở đây click chỉ hiện thị thôi
+    mouse1press()
+    wait(0.01)
+    mouse1release()
+end
+
+-- Các hàm giả lập chuột
+function mouse1press()
+    local UserInputService = game:GetService("UserInputService")
+    UserInputService.InputBegan:Fire({
+        UserInputType = Enum.UserInputType.MouseButton1
+    }, false)
+end
+
+function mouse1release()
+    local UserInputService = game:GetService("UserInputService")
+    UserInputService.InputEnded:Fire({
+        UserInputType = Enum.UserInputType.MouseButton1
+    }, false)
+end
