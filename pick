@@ -1,12 +1,13 @@
 --// Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
+local camera = Workspace.CurrentCamera
 
 --// Variables
 local autoClick = false
-local clickInterval = 0.1 -- 0.1 giây
+local clickInterval = 0.1
 local lastClick = 0
 
 --// GUI Setup
@@ -56,35 +57,35 @@ toggleButton.MouseButton1Click:Connect(function()
     toggleButton.Text = autoClick and "AutoClick: ON" or "AutoClick: OFF"
 end)
 
--- AutoClick giữa màn hình
-RunService.RenderStepped:Connect(function()
-    if autoClick then
-        if tick() - lastClick >= clickInterval then
-            lastClick = tick()
-            -- Vị trí giữa màn hình
-            local viewportSize = camera.ViewportSize
-            local centerX = viewportSize.X / 2
-            local centerY = viewportSize.Y / 2
+--// Function: Find closest part with ClickDetector to center screen
+local function getCenterTarget()
+    local viewportSize = camera.ViewportSize
+    local center = Vector2.new(viewportSize.X/2, viewportSize.Y/2)
+    local closestPart = nil
+    local shortestDist = math.huge
 
-            -- Giả lập click chuột
-            local UIS = game:GetService("UserInputService")
-            local input = Instance.new("InputObject")
-            -- Roblox không hỗ trợ click trực tiếp vào vị trí màn hình
-            -- Sử dụng click trực tiếp với FireClickDetector nếu cần click object
-            -- Ở đây click hiển thị trung tâm màn hình
-            mouse1click()
+    for _, part in ipairs(Workspace:GetDescendants()) do
+        if part:IsA("BasePart") and part:FindFirstChild("ClickDetector") then
+            local screenPos, onScreen = camera:WorldToViewportPoint(part.Position)
+            if onScreen then
+                local dist = (Vector2.new(screenPos.X, screenPos.Y) - center).Magnitude
+                if dist < shortestDist then
+                    shortestDist = dist
+                    closestPart = part
+                end
+            end
+        end
+    end
+    return closestPart
+end
+
+--// AutoClick Logic
+RunService.RenderStepped:Connect(function()
+    if autoClick and tick() - lastClick >= clickInterval then
+        lastClick = tick()
+        local targetPart = getCenterTarget()
+        if targetPart then
+            fireclickdetector(targetPart.ClickDetector)
         end
     end
 end)
-
--- Giả lập click (mặc dù không hoàn toàn click vật thể)
-function mouse1click()
-    local UIS = game:GetService("UserInputService")
-    UIS.InputBegan:Fire({
-        UserInputType = Enum.UserInputType.MouseButton1
-    }, false)
-    wait(0.01)
-    UIS.InputEnded:Fire({
-        UserInputType = Enum.UserInputType.MouseButton1
-    }, false)
-end
