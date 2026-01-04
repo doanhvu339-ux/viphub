@@ -1,0 +1,222 @@
+-- Rayfield UI
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+   Name = "Bake or Die",
+   LoadingTitle = "Bake or Die Interface",
+   LoadingSubtitle = "Loaded Successfully",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "BakeOrDie",
+      FileName = "BakeConfig"
+   },
+   KeySystem = false,
+})
+
+-- ZAP
+local ZAP = require(game:GetService("ReplicatedStorage").Client.ClientRemotes)
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Globals
+_G.KillAuraEnabled = false
+_G.AuraDistance = 25
+_G.WeaponSlot = 2
+
+-- ESP
+local ESPFolder = Instance.new("Folder", game.CoreGui)
+ESPFolder.Name = "ESP"
+
+local ESPConfig = {
+   MonsterESP = false,
+   ItemESP = false,
+   ShowNames = true,
+   ShowDistance = true,
+   ShowHighlight = true
+}
+
+-- ================== COMBAT TAB ==================
+local CombatTab = Window:CreateTab("Combat", 4483362458)
+CombatTab:CreateSection("Kill Aura")
+
+CombatTab:CreateToggle({
+   Name = "Kill Aura",
+   CurrentValue = false,
+   Callback = function(v)
+      _G.KillAuraEnabled = v
+   end,
+})
+
+CombatTab:CreateInput({
+   Name = "Kill Aura Radius (Studs)",
+   PlaceholderText = "Ví dụ: 25 / 50 / 100",
+   RemoveTextAfterFocusLost = false,
+   Callback = function(text)
+      local n = tonumber(text)
+      if n and n > 0 then
+         _G.AuraDistance = n
+      end
+   end,
+})
+
+CombatTab:CreateButton({
+   Name = "Kill All Zombies",
+   Callback = function()
+      for _, m in pairs(workspace.Monsters:GetChildren()) do
+         if m:FindFirstChild("HumanoidRootPart") then
+            ZAP.meleeAttack.fire({
+               monsters = {m},
+               civilians = {},
+               activeSlot = _G.WeaponSlot
+            })
+            task.wait(0.1)
+         end
+      end
+   end,
+})
+
+-- 🔥 THU THẬP XÁC TỪ XA
+CombatTab:CreateButton({
+   Name = "clloted dead zombie",
+   Callback = function()
+      for _, m in pairs(workspace.Monsters:GetChildren()) do
+         local hum = m:FindFirstChildOfClass("Humanoid")
+         if hum and hum.Health <= 0 then
+            for _, v in pairs(m:GetDescendants()) do
+               if v:IsA("ProximityPrompt") then
+                  pcall(function()
+                     fireproximityprompt(v)
+                  end)
+                  task.wait(0.05)
+               end
+            end
+         end
+      end
+   end,
+})
+
+-- ================== ITEMS TAB ==================
+local ItemsTab = Window:CreateTab("Items", 4483362458)
+ItemsTab:CreateSection("Items")
+
+ItemsTab:CreateButton({
+   Name = "Bring Bodies",
+   Callback = function()
+      local c = Players.LocalPlayer.Character
+      if not c or not c.PrimaryPart then return end
+      for _, v in pairs(workspace.Interactables:GetChildren()) do
+         if v:IsA("Model") and v:FindFirstChild("HumanoidRootPart") then
+            v.PrimaryPart.CFrame = c.PrimaryPart.CFrame
+         end
+      end
+   end,
+})
+
+ItemsTab:CreateButton({
+   Name = "Bring All Items",
+   Callback = function()
+      local c = Players.LocalPlayer.Character
+      if not c or not c.PrimaryPart then return end
+      for _, v in pairs(workspace.Interactables:GetChildren()) do
+         if v:IsA("Model") and v.PrimaryPart then
+            v.PrimaryPart.CFrame = c.PrimaryPart.CFrame
+         end
+      end
+   end,
+})
+
+-- ================== PLAYER TAB ==================
+local PlayerTab = Window:CreateTab("Player", 4483362458)
+PlayerTab:CreateSection("Stats")
+
+PlayerTab:CreateSlider({
+   Name = "WalkSpeed",
+   Range = {16, 200},
+   CurrentValue = 16,
+   Callback = function(v)
+      _G.WalkSpeed = v
+   end,
+})
+
+PlayerTab:CreateSlider({
+   Name = "JumpPower",
+   Range = {50, 200},
+   CurrentValue = 50,
+   Callback = function(v)
+      _G.JumpPower = v
+   end,
+})
+
+PlayerTab:CreateDropdown({
+   Name = "Weapon Slot",
+   Options = {"1","2","3","4","5","6","7","8","9","10"},
+   CurrentOption = "2",
+   Callback = function(o)
+      _G.WeaponSlot = tonumber(o)
+   end,
+})
+
+-- ================== ESP TAB ==================
+local ESPTab = Window:CreateTab("ESP", 4483362458)
+ESPTab:CreateSection("ESP")
+
+ESPTab:CreateToggle({
+   Name = "Monster ESP",
+   Callback = function(v)
+      ESPConfig.MonsterESP = v
+   end,
+})
+
+ESPTab:CreateToggle({
+   Name = "Item ESP",
+   Callback = function(v)
+      ESPConfig.ItemESP = v
+   end,
+})
+
+-- ================== LOOPS ==================
+
+-- Kill Aura loop
+task.spawn(function()
+   while task.wait() do
+      if _G.KillAuraEnabled then
+         local c = Players.LocalPlayer.Character
+         local root = c and c:FindFirstChild("HumanoidRootPart")
+         if root then
+            for _, m in pairs(workspace.Monsters:GetChildren()) do
+               if m:FindFirstChild("HumanoidRootPart") then
+                  if (root.Position - m.HumanoidRootPart.Position).Magnitude <= _G.AuraDistance then
+                     ZAP.meleeAttack.fire({
+                        monsters = {m},
+                        civilians = {},
+                        activeSlot = _G.WeaponSlot
+                     })
+                     break
+                  end
+               end
+            end
+         end
+      end
+   end
+end)
+
+-- Stats loop
+task.spawn(function()
+   while task.wait(1) do
+      local c = Players.LocalPlayer.Character
+      local h = c and c:FindFirstChild("Humanoid")
+      if h then
+         if _G.WalkSpeed then h.WalkSpeed = _G.WalkSpeed end
+         if _G.JumpPower then h.JumpPower = _G.JumpPower end
+      end
+   end
+end)
+
+-- Notify
+Rayfield:Notify({
+   Title = "Bake or Die",
+   Content = "Script loaded successfully!",
+   Duration = 5
+})
