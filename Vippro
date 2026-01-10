@@ -26,7 +26,7 @@ ToggleButton.BackgroundTransparency = 1
 ToggleButton.Active = true
 ToggleButton.Draggable = true
 
--- Main Frame (màu trắng, viền bo)
+-- Main Frame
 local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Size = UDim2.new(0,420,0,320)
 MainFrame.Position = UDim2.new(0.5,-210,0.5,-160)
@@ -40,7 +40,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Tab bar (xám nhạt)
+-- Tab bar
 local TabBar = Instance.new("Frame", MainFrame)
 TabBar.Size = UDim2.new(1,0,0,35)
 TabBar.BackgroundColor3 = Color3.fromRGB(200,200,200)
@@ -66,7 +66,9 @@ local function showTab(name)
     for n,f in pairs(Tabs) do f.Visible = (n==name) end
     for _,btn in pairs(TabBar:GetChildren()) do
         if btn:IsA("TextButton") then
-            btn.BackgroundColor3 = (btn.Text==name) and Color3.fromRGB(180,180,180) or Color3.fromRGB(220,220,220)
+            btn.BackgroundColor3 = (btn.Text==name)
+                and Color3.fromRGB(180,180,180)
+                or Color3.fromRGB(220,220,220)
         end
     end
 end
@@ -88,7 +90,7 @@ addTabButton("Script",3)
 addTabButton("Setting",4)
 showTab("Main")
 
--- Tạo toggle button helper
+-- Toggle helper
 local function createToggleButton(parent,text,y,settingKey,callback)
     local btn = Instance.new("TextButton", parent)
     btn.Size = UDim2.new(0,200,0,40)
@@ -103,26 +105,18 @@ local function createToggleButton(parent,text,y,settingKey,callback)
         btn.Text = text.." : "..(settings[settingKey] and "ON" or "OFF")
         if callback then callback(settings[settingKey]) end
     end)
-
-    if settings[settingKey] then
-        if callback then callback(true) end
-        btn.Text = text.." : ON"
-    end
 end
 
--------------------------------------------------
--- TAB MAIN
+-- MAIN TAB
 createToggleButton(Tabs["Main"],"Speed",20,"SpeedToggle",function(on)
     if on then
-        if not getgenv().SpeedConn then
-            getgenv().SpeedConn = rs.Stepped:Connect(function()
-                if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = settings.Speed
-                end
-            end)
-        end
+        getgenv().SpeedConn = rs.Stepped:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = settings.Speed
+            end
+        end)
     else
-        if getgenv().SpeedConn then getgenv().SpeedConn:Disconnect() getgenv().SpeedConn=nil end
+        if getgenv().SpeedConn then getgenv().SpeedConn:Disconnect() end
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             player.Character.Humanoid.WalkSpeed = 16
         end
@@ -131,105 +125,31 @@ end)
 
 createToggleButton(Tabs["Main"],"InfJump",70,"InfJump",function(on)
     if on then
-        if not getgenv().InfJumpConn then
-            getgenv().InfJumpConn = uis.JumpRequest:Connect(function()
-                if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-                    player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-                end
-            end)
-        end
+        getgenv().InfJumpConn = uis.JumpRequest:Connect(function()
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
     else
-        if getgenv().InfJumpConn then getgenv().InfJumpConn:Disconnect() getgenv().InfJumpConn=nil end
+        if getgenv().InfJumpConn then getgenv().InfJumpConn:Disconnect() end
     end
 end)
 
 createToggleButton(Tabs["Main"],"Noclip",120,"Noclip",function(on)
     if on then
-        if not getgenv().NoclipConn then
-            getgenv().NoclipConn = rs.Stepped:Connect(function()
-                if player.Character then
-                    for _,v in pairs(player.Character:GetDescendants()) do
-                        if v:IsA("BasePart") then v.CanCollide = false end
-                    end
+        getgenv().NoclipConn = rs.Stepped:Connect(function()
+            if player.Character then
+                for _,v in pairs(player.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then v.CanCollide = false end
                 end
-            end)
-        end
-    else
-        if getgenv().NoclipConn then getgenv().NoclipConn:Disconnect() getgenv().NoclipConn=nil end
-    end
-end)
-
--------------------------------------------------
--- TAB VISION
-local function applyHitboxReal(p, teamCheck)
-    if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-        if teamCheck and p.Team == player.Team then return end
-        local hrp = p.Character.HumanoidRootPart
-        hrp.Size = Vector3.new(settings.HitboxSize, settings.HitboxSize, settings.HitboxSize)
-        hrp.Transparency = 0.7
-        hrp.Material = Enum.Material.Neon
-        hrp.Color = Color3.fromRGB(255,255,255) -- trắng
-    end
-end
-
-local function resetHitboxReal(p)
-    if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-        local hrp = p.Character.HumanoidRootPart
-        pcall(function()
-            hrp.Size = Vector3.new(2,2,1)
-            hrp.Transparency = 1
-            hrp.Material = Enum.Material.Plastic
+            end
         end)
-    end
-end
-
-local function applyESP(p, teamCheck)
-    if p ~= player and p.Character then
-        if teamCheck and p.Team == player.Team then return end
-        if not p.Character:FindFirstChild("BaconESP") then
-            local hl = Instance.new("Highlight")
-            hl.Name = "BaconESP"
-            hl.FillTransparency = 1
-            hl.OutlineTransparency = 0
-            hl.Adornee = p.Character
-            hl.OutlineColor = Color3.fromRGB(255,255,255) -- trắng
-            hl.Parent = p.Character
-        else
-            local hl = p.Character:FindFirstChild("BaconESP")
-            if hl then hl.OutlineColor = Color3.fromRGB(255,255,255) end
-        end
-    end
-end
-
-local function resetESP(p)
-    if p.Character and p.Character:FindFirstChild("BaconESP") then
-        p.Character.BaconESP:Destroy()
-    end
-end
-
-createToggleButton(Tabs["Vision"],"Hitbox All",20,"HitboxAll",function(on) if on then settings.HitboxTeam=false end end)
-createToggleButton(Tabs["Vision"],"Hitbox Team",70,"HitboxTeam",function(on) if on then settings.HitboxAll=false end end)
-createToggleButton(Tabs["Vision"],"ESP All",120,"ESPAll",function(on) if on then settings.ESPTeam=false end end)
-createToggleButton(Tabs["Vision"],"ESP Team",170,"ESPTeam",function(on) if on then settings.ESPAll=false end end)
-
-rs.RenderStepped:Connect(function()
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if settings.HitboxAll then applyHitboxReal(p,false)
-        elseif settings.HitboxTeam then applyHitboxReal(p,true)
-        else resetHitboxReal(p) end
-
-        if settings.ESPAll then applyESP(p,false)
-        elseif settings.ESPTeam then applyESP(p,true)
-        else resetESP(p) end
+    else
+        if getgenv().NoclipConn then getgenv().NoclipConn:Disconnect() end
     end
 end)
 
--------------------------------------------------
--- TAB SCRIPT (3 NÚT)
-for _, obj in pairs(Tabs["Script"]:GetChildren()) do
-    if obj:IsA("TextButton") then obj:Destroy() end
-end
-
+-- SCRIPT TAB
 local function addScriptButton(name,x,y,url)
     local btn = Instance.new("TextButton", Tabs["Script"])
     btn.Size = UDim2.new(0,200,0,40)
@@ -239,40 +159,34 @@ local function addScriptButton(name,x,y,url)
     btn.Text = name
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
     btn.MouseButton1Click:Connect(function()
-        local success, err = pcall(function()
+        pcall(function()
             loadstring(game:HttpGet(url))()
         end)
-        if not success then warn("Failed to load script "..name..": "..err) end
     end)
 end
 
 addScriptButton("FlyGui",20,20,"https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt")
 addScriptButton("Aimbot",20,80,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/Aimbot")
 addScriptButton("Infinite Yield",20,140,"https://rawscripts.net/raw/Infinite-Yield_500")
+addScriptButton(
+    "Remove Tsunami",
+    20,
+    200,
+    "https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/sea%20in%20viphub"
+)
 
--------------------------------------------------
--- TAB SETTING
+-- SETTING TAB
 local speedBox = Instance.new("TextBox", Tabs["Setting"])
 speedBox.Size = UDim2.new(0,150,0,40)
 speedBox.Position = UDim2.new(0,20,0,20)
-speedBox.PlaceholderText = "Speed"
 speedBox.Text = tostring(settings.Speed)
-speedBox.TextColor3 = Color3.fromRGB(0,0,0)
 speedBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
 Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0,10)
 
 speedBox.FocusLost:Connect(function()
-    local val = tonumber(speedBox.Text)
-    if val and val>0 then
-        settings.Speed = val
-        if settings.SpeedToggle and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = val
-        end
-    else speedBox.Text=tostring(settings.Speed) end
-end)
-
-local hitboxBox = Instance.new("TextBox", Tabs["Setting"])
-hitboxBox.Size = UDim2.new(0,150,0,40)
+    local v = tonumber(speedBox.Text)
+    if v then settings.Speed = v end
+end)50,0,40)
 hitboxBox.Position = UDim2.new(0,20,0,80)
 hitboxBox.PlaceholderText = "Hitbox Size"
 hitboxBox.Text = tostring(settings.HitboxSize)
