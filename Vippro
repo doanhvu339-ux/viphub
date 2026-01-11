@@ -61,7 +61,9 @@ createTab("Script")
 createTab("Setting")
 
 local function showTab(name)
-    for n,f in pairs(Tabs) do f.Visible = (n==name) end
+    for n,f in pairs(Tabs) do
+        f.Visible = (n == name)
+    end
 end
 
 local function addTabButton(name,x)
@@ -72,7 +74,9 @@ local function addTabButton(name,x)
     btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
     btn.TextColor3 = Color3.fromRGB(0,0,0)
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
-    btn.MouseButton1Click:Connect(function() showTab(name) end)
+    btn.MouseButton1Click:Connect(function()
+        showTab(name)
+    end)
 end
 
 addTabButton("Main",0)
@@ -112,15 +116,17 @@ createToggleButton(Tabs.Main,"Speed",20,"SpeedToggle",function(on)
         end)
     else
         if getgenv().SpeedConn then getgenv().SpeedConn:Disconnect() end
-        if player.Character then player.Character.Humanoid.WalkSpeed = 16 end
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = 16
+        end
     end
 end)
 
 createToggleButton(Tabs.Main,"Inf Jump",70,"InfJump",function(on)
     if on then
         getgenv().InfJumpConn = uis.JumpRequest:Connect(function()
-            if player.Character then
-                player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                player.Character:FindFirstChildOfClass("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
             end
         end)
     else
@@ -133,7 +139,9 @@ createToggleButton(Tabs.Main,"Noclip",120,"Noclip",function(on)
         getgenv().NoclipConn = rs.Stepped:Connect(function()
             if player.Character then
                 for _,v in pairs(player.Character:GetDescendants()) do
-                    if v:IsA("BasePart") then v.CanCollide=false end
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                    end
                 end
             end
         end)
@@ -142,7 +150,7 @@ createToggleButton(Tabs.Main,"Noclip",120,"Noclip",function(on)
     end
 end)
 
--- TAB SCRIPT (FULL + SEA IN VIPHUB)
+-- TAB SCRIPT
 local function addScriptButton(name,y,url)
     local btn = Instance.new("TextButton", Tabs.Script)
     btn.Size = UDim2.new(0,200,0,40)
@@ -160,12 +168,14 @@ addScriptButton("FlyGui",20,"https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/m
 addScriptButton("Aimbot",70,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/Aimbot")
 addScriptButton("Infinite Yield",120,"https://rawscripts.net/raw/Infinite-Yield_500")
 addScriptButton("Sea In VipHub",170,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/sea%20in%20viphub")
+addScriptButton("Giant Smash",220,"https://raw.githubusercontent.com/gumanba/Scripts/main/GiantSmash")
 
 -- TAB SETTING
 local speedBox = Instance.new("TextBox", Tabs.Setting)
 speedBox.Size = UDim2.new(0,150,0,40)
 speedBox.Position = UDim2.new(0,20,0,20)
 speedBox.Text = tostring(settings.Speed)
+speedBox.PlaceholderText = "Speed"
 speedBox.FocusLost:Connect(function()
     local v = tonumber(speedBox.Text)
     if v then settings.Speed = v end
