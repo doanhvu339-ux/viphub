@@ -1,230 +1,242 @@
--- Khởi tạo settings
-if not getgenv().BaconSettings then
-    getgenv().BaconSettings = {
-        SpeedToggle=false, InfJump=false, Noclip=false,
-        HitboxAll=false, HitboxTeam=false,
-        ESPAll=false, ESPTeam=false,
-        Speed=100, HitboxSize=20
-    }
-end
+--// Bacon Premium FULL | White Theme
+
+getgenv().BaconSettings = {
+    SpeedToggle=false, InfJump=false, Noclip=false,
+    HitboxAll=false, HitboxTeam=false,
+    ESPAll=false, ESPTeam=false,
+    Speed=50, HitboxSize=15
+}
 local settings = getgenv().BaconSettings
 
-local player = game.Players.LocalPlayer
-local uis = game:GetService("UserInputService")
-local rs = game:GetService("RunService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local player = Players.LocalPlayer
 
--------------------------------------------------
--- GUI
+--------------------------------------------------
+-- CLEAN GUI
 if game.CoreGui:FindFirstChild("BaconPremium") then
     game.CoreGui.BaconPremium:Destroy()
 end
 
-local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-ScreenGui.Name = "BaconPremium"
+--------------------------------------------------
+-- GUI
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "BaconPremium"
 
-local ToggleButton = Instance.new("ImageButton", ScreenGui)
-ToggleButton.Size = UDim2.new(0,50,0,50)
-ToggleButton.Position = UDim2.new(0,20,0,200)
-ToggleButton.Image = "rbxassetid://116361389844239"
-ToggleButton.BackgroundTransparency = 1
-ToggleButton.Active = true
-ToggleButton.Draggable = true
+local openBtn = Instance.new("TextButton", gui)
+openBtn.Size = UDim2.new(0,50,0,50)
+openBtn.Position = UDim2.new(0,20,0,200)
+openBtn.Text = "☰"
+openBtn.TextSize = 26
+openBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
+openBtn.TextColor3 = Color3.fromRGB(0,0,0)
+openBtn.Active, openBtn.Draggable = true, true
+Instance.new("UICorner", openBtn)
 
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0,420,0,320)
-MainFrame.Position = UDim2.new(0.5,-210,0.5,-160)
-MainFrame.BackgroundColor3 = Color3.fromRGB(255,255,255)
-MainFrame.Active = true
-MainFrame.Draggable = true
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0,420,0,320)
+main.Position = UDim2.new(0.5,-210,0.5,-160)
+main.BackgroundColor3 = Color3.fromRGB(255,255,255)
+main.Active, main.Draggable = true, true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
 
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
+openBtn.MouseButton1Click:Connect(function()
+    main.Visible = not main.Visible
 end)
 
--------------------------------------------------
--- Tab bar
-local TabBar = Instance.new("Frame", MainFrame)
-TabBar.Size = UDim2.new(1,0,0,35)
-TabBar.BackgroundColor3 = Color3.fromRGB(200,200,200)
-Instance.new("UICorner", TabBar).CornerRadius = UDim.new(0,8)
+--------------------------------------------------
+-- TAB BAR
+local bar = Instance.new("Frame", main)
+bar.Size = UDim2.new(1,0,0,40)
+bar.BackgroundColor3 = Color3.fromRGB(245,245,245)
+Instance.new("UICorner", bar)
 
+--------------------------------------------------
+-- TABS
 local Tabs = {}
-local function createTab(name)
-    local tab = Instance.new("Frame", MainFrame)
-    tab.Size = UDim2.new(1,0,1,-35)
-    tab.Position = UDim2.new(0,0,0,35)
-    tab.BackgroundTransparency = 1
-    tab.Visible = false
-    tab.Name = name
-    Tabs[name] = tab
+local function newTab(name)
+    local f = Instance.new("Frame", main)
+    f.Size = UDim2.new(1,0,1,-40)
+    f.Position = UDim2.new(0,0,0,40)
+    f.BackgroundTransparency = 1
+    f.Visible = false
+    Tabs[name] = f
 end
 
-createTab("Main")
-createTab("Vision")
-createTab("Script")
-createTab("Setting")
+newTab("Main")
+newTab("Vision")
+newTab("Script")
+newTab("Setting")
 
-local function showTab(name)
-    for n,f in pairs(Tabs) do f.Visible = (n==name) end
-    for _,b in pairs(TabBar:GetChildren()) do
-        if b:IsA("TextButton") then
-            b.BackgroundColor3 = (b.Text==name)
-                and Color3.fromRGB(180,180,180)
-                or Color3.fromRGB(220,220,220)
-        end
-    end
+local function showTab(n)
+    for k,v in pairs(Tabs) do v.Visible = (k==n) end
 end
 
-local function addTabButton(name,order)
-    local btn = Instance.new("TextButton", TabBar)
-    btn.Size = UDim2.new(0,100,1,0)
-    btn.Position = UDim2.new(0,(order-1)*100,0,0)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(0,0,0)
-    btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,8)
-    btn.MouseButton1Click:Connect(function()
-        showTab(name)
-    end)
+local function tabBtn(text,x)
+    local b = Instance.new("TextButton", bar)
+    b.Size = UDim2.new(0,105,1,0)
+    b.Position = UDim2.new(0,x,0,0)
+    b.Text = text
+    b.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    b.TextColor3 = Color3.fromRGB(0,0,0)
+    Instance.new("UICorner", b)
+    b.MouseButton1Click:Connect(function() showTab(text) end)
 end
 
-addTabButton("Main",1)
-addTabButton("Vision",2)
-addTabButton("Script",3)
-addTabButton("Setting",4)
+tabBtn("Main",0)
+tabBtn("Vision",105)
+tabBtn("Script",210)
+tabBtn("Setting",315)
 showTab("Main")
 
--------------------------------------------------
--- Toggle helper
-local function createToggle(parent,text,y,key,callback)
-    local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.new(0,200,0,40)
-    btn.Position = UDim2.new(0,20,0,y)
-    btn.TextColor3 = Color3.fromRGB(0,0,0)
-    btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
+--------------------------------------------------
+-- TOGGLE
+local function toggle(parent,text,y,flag,cb)
+    local b = Instance.new("TextButton", parent)
+    b.Size = UDim2.new(0,220,0,40)
+    b.Position = UDim2.new(0,20,0,y)
+    Instance.new("UICorner", b)
 
     local function refresh()
-        btn.Text = text.." : "..(settings[key] and "ON" or "OFF")
+        if settings[flag] then
+            b.Text = text.." : ON"
+            b.BackgroundColor3 = Color3.fromRGB(220,220,220)
+        else
+            b.Text = text.." : OFF"
+            b.BackgroundColor3 = Color3.fromRGB(245,245,245)
+        end
     end
 
-    btn.MouseButton1Click:Connect(function()
-        settings[key] = not settings[key]
+    b.MouseButton1Click:Connect(function()
+        settings[flag] = not settings[flag]
         refresh()
-        if callback then callback(settings[key]) end
+        if cb then cb(settings[flag]) end
     end)
 
     refresh()
 end
 
--------------------------------------------------
--- TAB MAIN
-createToggle(Tabs.Main,"Speed",20,"SpeedToggle",function(on)
+--------------------------------------------------
+-- TAB 1 MAIN
+toggle(Tabs.Main,"Speed",20,"SpeedToggle",function(on)
     if on then
-        if not getgenv().SpeedConn then
-            getgenv().SpeedConn = rs.Stepped:Connect(function()
-                if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = settings.Speed
-                end
-            end)
-        end
+        getgenv().spd = RunService.Stepped:Connect(function()
+            if player.Character and player.Character:FindFirstChild("Humanoid") then
+                player.Character.Humanoid.WalkSpeed = settings.Speed
+            end
+        end)
     else
-        if getgenv().SpeedConn then getgenv().SpeedConn:Disconnect() end
+        if getgenv().spd then getgenv().spd:Disconnect() end
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             player.Character.Humanoid.WalkSpeed = 16
         end
     end
 end)
 
-createToggle(Tabs.Main,"Inf Jump",70,"InfJump",function(on)
+toggle(Tabs.Main,"Inf Jump",70,"InfJump",function(on)
     if on then
-        if not getgenv().InfJumpConn then
-            getgenv().InfJumpConn = uis.JumpRequest:Connect(function()
-                if player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                end
-            end)
-        end
+        getgenv().ij = UIS.JumpRequest:Connect(function()
+            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end)
     else
-        if getgenv().InfJumpConn then getgenv().InfJumpConn:Disconnect() end
+        if getgenv().ij then getgenv().ij:Disconnect() end
     end
 end)
 
-createToggle(Tabs.Main,"Noclip",120,"Noclip",function(on)
+toggle(Tabs.Main,"Noclip",120,"Noclip",function(on)
     if on then
-        if not getgenv().NoclipConn then
-            getgenv().NoclipConn = rs.Stepped:Connect(function()
-                if player.Character then
-                    for _,v in pairs(player.Character:GetDescendants()) do
-                        if v:IsA("BasePart") then
-                            v.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        end
+        getgenv().nc = RunService.Stepped:Connect(function()
+            for _,v in pairs(player.Character:GetDescendants()) do
+                if v:IsA("BasePart") then v.CanCollide = false end
+            end
+        end)
     else
-        if getgenv().NoclipConn then getgenv().NoclipConn:Disconnect() end
+        if getgenv().nc then getgenv().nc:Disconnect() end
     end
 end)
 
--------------------------------------------------
--- TAB SCRIPT
-local function addScriptButton(name,y,url)
-    local btn = Instance.new("TextButton", Tabs.Script)
-    btn.Size = UDim2.new(0,200,0,40)
-    btn.Position = UDim2.new(0,20,0,y)
-    btn.Text = name
-    btn.TextColor3 = Color3.fromRGB(0,0,0)
-    btn.BackgroundColor3 = Color3.fromRGB(220,220,220)
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0,10)
-    btn.MouseButton1Click:Connect(function()
+--------------------------------------------------
+-- TAB 2 VISION (HITBOX + ESP VIỀN)
+local ESPFolder = Instance.new("Folder", game.CoreGui)
+ESPFolder.Name = "BaconESP"
+
+local function clearESP()
+    for _,v in pairs(ESPFolder:GetChildren()) do v:Destroy() end
+end
+
+RunService.Stepped:Connect(function()
+    clearESP()
+    for _,plr in pairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local enemy = plr.Team ~= player.Team
+
+            -- HITBOX
+            if settings.HitboxAll or (settings.HitboxTeam and enemy) then
+                local hrp = plr.Character.HumanoidRootPart
+                hrp.Size = Vector3.new(settings.HitboxSize,settings.HitboxSize,settings.HitboxSize)
+                hrp.Transparency = 0.5
+                hrp.CanCollide = false
+            end
+
+            -- ESP
+            if settings.ESPAll or (settings.ESPTeam and enemy) then
+                local hl = Instance.new("Highlight", ESPFolder)
+                hl.Adornee = plr.Character
+                hl.FillTransparency = 1
+                hl.OutlineTransparency = 0
+                hl.OutlineColor = enemy and Color3.fromRGB(255,0,0) or Color3.fromRGB(0,255,0)
+            end
+        end
+    end
+end)
+
+toggle(Tabs.Vision,"Hitbox ALL",20,"HitboxAll")
+toggle(Tabs.Vision,"Hitbox Team",70,"HitboxTeam")
+toggle(Tabs.Vision,"ESP ALL",120,"ESPAll")
+toggle(Tabs.Vision,"ESP Team",170,"ESPTeam")
+
+--------------------------------------------------
+-- TAB 3 SCRIPT (ONE CLICK)
+local function oneClick(text,y,url)
+    local b = Instance.new("TextButton", Tabs.Script)
+    b.Size = UDim2.new(0,220,0,40)
+    b.Position = UDim2.new(0,20,0,y)
+    b.Text = text
+    b.BackgroundColor3 = Color3.fromRGB(245,245,245)
+    Instance.new("UICorner", b)
+
+    b.MouseButton1Click:Connect(function()
         pcall(function()
             loadstring(game:HttpGet(url))()
         end)
+        b.Text = text.." (LOADED)"
+        b.BackgroundColor3 = Color3.fromRGB(220,220,220)
     end)
 end
 
-addScriptButton("GiantSmash",20,
-"https://raw.githubusercontent.com/gumanba/Scripts/main/GiantSmash")
+oneClick("Fly GUI",20,"https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt")
+oneClick("Infinite Yield",70,"https://rawscripts.net/raw/Infinite-Yield_500")
+oneClick("Duels Slap",120,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/duels%20slap")
 
-addScriptButton("SEA in VipHub",70,
-"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/sea%20in%20viphub")
-
-addScriptButton("FlyGui",120,
-"https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt")
-
-addScriptButton("Aimbot",170,
-"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/Aimbot")
-
-addScriptButton("Infinite Yield",220,
-"https://rawscripts.net/raw/Infinite-Yield_500")
-
--------------------------------------------------
--- TAB SETTING
+--------------------------------------------------
+-- TAB 4 SETTING
 local speedBox = Instance.new("TextBox", Tabs.Setting)
-speedBox.Size = UDim2.new(0,150,0,40)
+speedBox.Size = UDim2.new(0,180,0,40)
 speedBox.Position = UDim2.new(0,20,0,20)
-speedBox.Text = tostring(settings.Speed)
-speedBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
+speedBox.Text = settings.Speed
 Instance.new("UICorner", speedBox)
-
 speedBox.FocusLost:Connect(function()
-    local v = tonumber(speedBox.Text)
-    if v then settings.Speed = v end
-    speedBox.Text = tostring(settings.Speed)
+    settings.Speed = tonumber(speedBox.Text) or settings.Speed
+    speedBox.Text = settings.Speed
 end)
 
-local hitboxBox = Instance.new("TextBox", Tabs.Setting)
-hitboxBox.Size = UDim2.new(0,150,0,40)
-hitboxBox.Position = UDim2.new(0,20,0,80)
-hitboxBox.Text = tostring(settings.HitboxSize)
-hitboxBox.BackgroundColor3 = Color3.fromRGB(240,240,240)
-Instance.new("UICorner", hitboxBox)
-
-hitboxBox.FocusLost:Connect(function()
-    local v = tonumber(hitboxBox.Text)
-    if v then settings.HitboxSize = v end
-    hitboxBox.Text = tostring(settings.HitboxSize)
+local hitBox = Instance.new("TextBox", Tabs.Setting)
+hitBox.Size = UDim2.new(0,180,0,40)
+hitBox.Position = UDim2.new(0,20,0,80)
+hitBox.Text = settings.HitboxSize
+Instance.new("UICorner", hitBox)
+hitBox.FocusLost:Connect(function()
+    settings.HitboxSize = tonumber(hitBox.Text) or settings.HitboxSize
+    hitBox.Text = settings.HitboxSize
 end)
