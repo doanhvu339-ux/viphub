@@ -1,0 +1,156 @@
+--// White Theme Menu: Hitbox + Speed (LIVE UPDATE)
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- ===== DEFAULT VALUES =====
+local HitboxOn = false
+local HitboxSizeValue = 20
+local HitboxTransparency = 0.9
+
+local SpeedOn = false
+local SpeedValue = 30
+local DefaultSpeed = 16
+
+local Humanoid
+
+-- Update humanoid
+local function updateHumanoid()
+	if LocalPlayer.Character then
+		Humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	end
+end
+updateHumanoid()
+LocalPlayer.CharacterAdded:Connect(function()
+	task.wait(1)
+	updateHumanoid()
+end)
+
+-- ===== GUI =====
+local gui = Instance.new("ScreenGui", game.CoreGui)
+gui.Name = "WhiteMenuLive"
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 320, 0, 320)
+main.Position = UDim2.new(0.5, -160, 0.5, -160)
+main.BackgroundColor3 = Color3.fromRGB(255,255,255)
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
+
+-- Title
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 10, 0, 0)
+title.Text = "🤍 WHITE MENU (LIVE)"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.TextColor3 = Color3.fromRGB(20,20,20)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Close
+local close = Instance.new("TextButton", main)
+close.Size = UDim2.new(0, 32, 0, 32)
+close.Position = UDim2.new(1, -36, 0, 4)
+close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.TextSize = 14
+close.TextColor3 = Color3.fromRGB(255,255,255)
+close.BackgroundColor3 = Color3.fromRGB(255,80,80)
+Instance.new("UICorner", close).CornerRadius = UDim.new(1,0)
+close.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+-- ===== HITBOX INPUT =====
+local hitboxBox = Instance.new("TextBox", main)
+hitboxBox.Size = UDim2.new(0, 280, 0, 38)
+hitboxBox.Position = UDim2.new(0, 20, 0, 50)
+hitboxBox.Text = tostring(HitboxSizeValue)
+hitboxBox.Font = Enum.Font.GothamBold
+hitboxBox.TextSize = 14
+hitboxBox.BackgroundColor3 = Color3.fromRGB(235,235,235)
+hitboxBox.ClearTextOnFocus = false
+Instance.new("UICorner", hitboxBox).CornerRadius = UDim.new(0,10)
+Instance.new("UIStroke", hitboxBox).Color = Color3.fromRGB(180,180,180)
+
+local hitboxBtn = Instance.new("TextButton", main)
+hitboxBtn.Size = UDim2.new(0, 280, 0, 44)
+hitboxBtn.Position = UDim2.new(0, 20, 0, 95)
+hitboxBtn.Text = "Hitbox: OFF"
+hitboxBtn.Font = Enum.Font.GothamBold
+hitboxBtn.TextSize = 15
+hitboxBtn.TextColor3 = Color3.fromRGB(255,255,255)
+hitboxBtn.BackgroundColor3 = Color3.fromRGB(150,150,150)
+Instance.new("UICorner", hitboxBtn).CornerRadius = UDim.new(0,12)
+
+hitboxBtn.MouseButton1Click:Connect(function()
+	HitboxOn = not HitboxOn
+	hitboxBtn.Text = HitboxOn and "Hitbox: ON" or "Hitbox: OFF"
+	hitboxBtn.BackgroundColor3 = HitboxOn and Color3.fromRGB(0,180,120) or Color3.fromRGB(150,150,150)
+end)
+
+-- ===== SPEED INPUT =====
+local speedBox = Instance.new("TextBox", main)
+speedBox.Size = UDim2.new(0, 280, 0, 38)
+speedBox.Position = UDim2.new(0, 20, 0, 155)
+speedBox.Text = tostring(SpeedValue)
+speedBox.Font = Enum.Font.GothamBold
+speedBox.TextSize = 14
+speedBox.BackgroundColor3 = Color3.fromRGB(235,235,235)
+speedBox.ClearTextOnFocus = false
+Instance.new("UICorner", speedBox).CornerRadius = UDim.new(0,10)
+Instance.new("UIStroke", speedBox).Color = Color3.fromRGB(180,180,180)
+
+local speedBtn = Instance.new("TextButton", main)
+speedBtn.Size = UDim2.new(0, 280, 0, 44)
+speedBtn.Position = UDim2.new(0, 20, 0, 200)
+speedBtn.Text = "Speed: OFF"
+speedBtn.Font = Enum.Font.GothamBold
+speedBtn.TextSize = 15
+speedBtn.TextColor3 = Color3.fromRGB(255,255,255)
+speedBtn.BackgroundColor3 = Color3.fromRGB(150,150,150)
+Instance.new("UICorner", speedBtn).CornerRadius = UDim.new(0,12)
+
+speedBtn.MouseButton1Click:Connect(function()
+	SpeedOn = not SpeedOn
+	speedBtn.Text = SpeedOn and "Speed: ON" or "Speed: OFF"
+	speedBtn.BackgroundColor3 = SpeedOn and Color3.fromRGB(0,180,120) or Color3.fromRGB(150,150,150)
+end)
+
+-- ===== LIVE UPDATE LOOP =====
+RunService.Heartbeat:Connect(function()
+	-- Read values live
+	local hb = tonumber(hitboxBox.Text)
+	if hb then HitboxSizeValue = math.clamp(hb, 3, 50) end
+
+	local sp = tonumber(speedBox.Text)
+	if sp then SpeedValue = math.clamp(sp, 16, 200) end
+
+	-- Apply speed continuously
+	if Humanoid then
+		if SpeedOn then
+			Humanoid.WalkSpeed = SpeedValue
+		else
+			Humanoid.WalkSpeed = DefaultSpeed
+		end
+	end
+
+	-- Apply hitbox continuously
+	if HitboxOn then
+		for _,plr in pairs(Players:GetPlayers()) do
+			if plr ~= LocalPlayer and plr.Character then
+				local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					hrp.Size = Vector3.new(HitboxSizeValue, HitboxSizeValue, HitboxSizeValue)
+					hrp.Transparency = HitboxTransparency
+					hrp.Material = Enum.Material.Neon
+					hrp.BrickColor = BrickColor.new("Really red")
+					hrp.CanCollide = false
+				end
+			end
+		end
+	end
+end)
