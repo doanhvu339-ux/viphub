@@ -472,8 +472,9 @@ mini2.MouseButton1Click:Connect(function()
 	main.Frame.BackgroundTransparency = 0 
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
-local admin = "ehfphvg362"
+-- ADMIN CHAT CONTROL
 local Players = game:GetService("Players")
+local admin = "ehfphvg362"
 
 local locked = false
 
@@ -489,7 +490,7 @@ local function handleChat(plr,msg)
 	
 	if cmd == "fly" then
 		if not locked then
-			onof.MouseButton1Down:Fire()
+			onof:Activate()
 		end
 		
 	elseif cmd == "unfly" then
@@ -514,4 +515,17 @@ Players.PlayerAdded:Connect(function(p)
 	p.Chatted:Connect(function(msg)
 		handleChat(p,msg)
 	end)
+end)
+
+-- CHẶN NÚT FLY KHI BỊ LOCK
+local old = onof.MouseButton1Down
+onof.MouseButton1Down:Connect(function()
+	if locked then
+		game:GetService("StarterGui"):SetCore("SendNotification",{
+			Title = "Fly Locked",
+			Text = "Admin đã khóa fly",
+			Duration = 3
+		})
+		return
+	end
 end)
