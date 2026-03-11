@@ -31,14 +31,16 @@ openBtn.Text = "☰"
 openBtn.TextSize = 26
 openBtn.BackgroundColor3 = Color3.fromRGB(255,255,255)
 openBtn.TextColor3 = Color3.fromRGB(0,0,0)
-openBtn.Active, openBtn.Draggable = true, true
+openBtn.Active = true
+openBtn.Draggable = true
 Instance.new("UICorner", openBtn)
 
 local main = Instance.new("Frame", gui)
 main.Size = UDim2.new(0,420,0,320)
 main.Position = UDim2.new(0.5,-210,0.5,-160)
 main.BackgroundColor3 = Color3.fromRGB(255,255,255)
-main.Active, main.Draggable = true, true
+main.Active = true
+main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,14)
 
 openBtn.MouseButton1Click:Connect(function()
@@ -55,6 +57,7 @@ Instance.new("UICorner", bar)
 --------------------------------------------------
 -- TABS
 local Tabs = {}
+
 local function newTab(name)
     local f = Instance.new("Frame", main)
     f.Size = UDim2.new(1,0,1,-40)
@@ -70,7 +73,9 @@ newTab("Script")
 newTab("Setting")
 
 local function showTab(n)
-    for k,v in pairs(Tabs) do v.Visible = (k==n) end
+    for k,v in pairs(Tabs) do
+        v.Visible = (k==n)
+    end
 end
 
 local function tabBtn(text,x)
@@ -81,18 +86,23 @@ local function tabBtn(text,x)
     b.BackgroundColor3 = Color3.fromRGB(255,255,255)
     b.TextColor3 = Color3.fromRGB(0,0,0)
     Instance.new("UICorner", b)
-    b.MouseButton1Click:Connect(function() showTab(text) end)
+
+    b.MouseButton1Click:Connect(function()
+        showTab(text)
+    end)
 end
 
 tabBtn("Main",0)
 tabBtn("Vision",105)
 tabBtn("Script",210)
 tabBtn("Setting",315)
+
 showTab("Main")
 
 --------------------------------------------------
--- TOGGLE
+-- TOGGLE FUNCTION
 local function toggle(parent,text,y,flag,cb)
+
     local b = Instance.new("TextButton", parent)
     b.Size = UDim2.new(0,220,0,40)
     b.Position = UDim2.new(0,20,0,y)
@@ -118,8 +128,10 @@ local function toggle(parent,text,y,flag,cb)
 end
 
 --------------------------------------------------
--- TAB 1 MAIN
+-- TAB MAIN
+
 toggle(Tabs.Main,"Speed",20,"SpeedToggle",function(on)
+
     if on then
         getgenv().spd = RunService.Stepped:Connect(function()
             if player.Character and player.Character:FindFirstChild("Humanoid") then
@@ -132,9 +144,11 @@ toggle(Tabs.Main,"Speed",20,"SpeedToggle",function(on)
             player.Character.Humanoid.WalkSpeed = 16
         end
     end
+
 end)
 
 toggle(Tabs.Main,"Inf Jump",70,"InfJump",function(on)
+
     if on then
         getgenv().ij = UIS.JumpRequest:Connect(function()
             player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -142,36 +156,49 @@ toggle(Tabs.Main,"Inf Jump",70,"InfJump",function(on)
     else
         if getgenv().ij then getgenv().ij:Disconnect() end
     end
+
 end)
 
 toggle(Tabs.Main,"Noclip",120,"Noclip",function(on)
+
     if on then
         getgenv().nc = RunService.Stepped:Connect(function()
-            for _,v in pairs(player.Character:GetDescendants()) do
-                if v:IsA("BasePart") then v.CanCollide = false end
+            if player.Character then
+                for _,v in pairs(player.Character:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                    end
+                end
             end
         end)
     else
         if getgenv().nc then getgenv().nc:Disconnect() end
     end
+
 end)
 
 --------------------------------------------------
--- TAB 2 VISION (HITBOX + ESP VIỀN)
+-- TAB VISION
+
 local ESPFolder = Instance.new("Folder", game.CoreGui)
 ESPFolder.Name = "BaconESP"
 
 local function clearESP()
-    for _,v in pairs(ESPFolder:GetChildren()) do v:Destroy() end
+    for _,v in pairs(ESPFolder:GetChildren()) do
+        v:Destroy()
+    end
 end
 
 RunService.Stepped:Connect(function()
+
     clearESP()
+
     for _,plr in pairs(Players:GetPlayers()) do
+
         if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+
             local enemy = plr.Team ~= player.Team
 
-            -- HITBOX
             if settings.HitboxAll or (settings.HitboxTeam and enemy) then
                 local hrp = plr.Character.HumanoidRootPart
                 hrp.Size = Vector3.new(settings.HitboxSize,settings.HitboxSize,settings.HitboxSize)
@@ -179,16 +206,19 @@ RunService.Stepped:Connect(function()
                 hrp.CanCollide = false
             end
 
-            -- ESP
             if settings.ESPAll or (settings.ESPTeam and enemy) then
+
                 local hl = Instance.new("Highlight", ESPFolder)
                 hl.Adornee = plr.Character
                 hl.FillTransparency = 1
                 hl.OutlineTransparency = 0
                 hl.OutlineColor = enemy and Color3.fromRGB(255,0,0) or Color3.fromRGB(0,255,0)
+
             end
+
         end
     end
+
 end)
 
 toggle(Tabs.Vision,"Hitbox ALL",20,"HitboxAll")
@@ -197,37 +227,65 @@ toggle(Tabs.Vision,"ESP ALL",120,"ESPAll")
 toggle(Tabs.Vision,"ESP Team",170,"ESPTeam")
 
 --------------------------------------------------
--- TAB 3 SCRIPT (ONE CLICK)
-local function oneClick(text,y,url)
-    local b = Instance.new("TextButton", Tabs.Script)
+-- TAB SCRIPT (SCROLL + X,Y)
+
+local ScriptScroll = Instance.new("ScrollingFrame", Tabs.Script)
+ScriptScroll.Size = UDim2.new(1,-10,1,-10)
+ScriptScroll.Position = UDim2.new(0,5,0,5)
+ScriptScroll.CanvasSize = UDim2.new(0,0,0,600)
+ScriptScroll.ScrollBarThickness = 6
+ScriptScroll.BackgroundTransparency = 1
+
+local function oneClick(name,x,y,url)
+
+    local b = Instance.new("TextButton", ScriptScroll)
     b.Size = UDim2.new(0,220,0,40)
-    b.Position = UDim2.new(0,20,0,y)
-    b.Text = text
+    b.Position = UDim2.new(0,x,0,y)
+    b.Text = name
     b.BackgroundColor3 = Color3.fromRGB(245,245,245)
+    b.TextColor3 = Color3.fromRGB(0,0,0)
     Instance.new("UICorner", b)
 
     b.MouseButton1Click:Connect(function()
-        pcall(function()
+
+        local success,err = pcall(function()
             loadstring(game:HttpGet(url))()
         end)
-        b.Text = text.." (LOADED)"
-        b.BackgroundColor3 = Color3.fromRGB(220,220,220)
+
+        if success then
+            b.Text = name.." (LOADED)"
+            b.BackgroundColor3 = Color3.fromRGB(220,220,220)
+        else
+            warn(err)
+        end
+
     end)
+
 end
 
-addScriptButton("FlyGui",20,20,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/flyv3")
-addScriptButton("Infinite Yield",20,70,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/flyv3")
-addScriptButton("Duels Slap",20,120," https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/duels%20slap")
-addScriptButton("aimbody",20,170,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/Aimbot")
-addScriptButton("fix lag",20,220,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/fix%20lag")
-addScriptButton("bloxfruite",210,20,"https://raw.githubusercontent.com/fakekuri/Okhubhere/refs/heads/main/MainBloxFruit.lua")
+-- SCRIPTS
+
+oneClick("Fly GUI",20,20,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/flyv3")
+
+oneClick("Infinite Yield",20,70,"https://rawscripts.net/raw/Infinite-Yield_500")
+
+oneClick("Duels Slap",20,120,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/duels%20slap")
+
+oneClick("Aimbot",20,170,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/Aimbot")
+
+oneClick("Fix Lag",20,220,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/fix%20lag")
+
+oneClick("Blox Fruit",20,270,"https://raw.githubusercontent.com/fakekuri/Okhubhere/refs/heads/main/MainBloxFruit.lua")
+
 --------------------------------------------------
--- TAB 4 SETTING
+-- TAB SETTING
+
 local speedBox = Instance.new("TextBox", Tabs.Setting)
 speedBox.Size = UDim2.new(0,180,0,40)
 speedBox.Position = UDim2.new(0,20,0,20)
 speedBox.Text = settings.Speed
 Instance.new("UICorner", speedBox)
+
 speedBox.FocusLost:Connect(function()
     settings.Speed = tonumber(speedBox.Text) or settings.Speed
     speedBox.Text = settings.Speed
@@ -238,6 +296,7 @@ hitBox.Size = UDim2.new(0,180,0,40)
 hitBox.Position = UDim2.new(0,20,0,80)
 hitBox.Text = settings.HitboxSize
 Instance.new("UICorner", hitBox)
+
 hitBox.FocusLost:Connect(function()
     settings.HitboxSize = tonumber(hitBox.Text) or settings.HitboxSize
     hitBox.Text = settings.HitboxSize
