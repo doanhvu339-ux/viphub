@@ -475,79 +475,43 @@ end)
 local admin = "ehfphvg362"
 local Players = game:GetService("Players")
 
-local lockedfly = false
+local locked = false
 
 local function handleChat(plr,msg)
-
 	if plr.Name ~= admin then return end
 	
 	local args = string.split(msg," ")
-	local cmd = args[1]
+	local cmd = string.lower(args[1] or "")
 	local target = args[2]
 	
-	if not target then return end
-	
 	local myname = Players.LocalPlayer.Name
-	
-	-- ===== LỆNH ALL =====
-	if target == "all" then
-	
-		if cmd == "fly" then
-			if not lockedfly then
-				nowe = true
-				onof:MouseButton1Down:Fire()
-			end
-		end
-		
-		if cmd == "unfly" then
-			nowe = false
-			onof:MouseButton1Down:Fire()
-		end
-		
-		if cmd == "lockfly" then
-			lockedfly = true
-		end
-		
-		if cmd == "unlockfly" then
-			lockedfly = false
-		end
-		
-		return
-	end
-	
-	-- ===== LỆNH THEO TÊN =====
-	if target ~= myname then return end
+	if target ~= myname and target ~= "all" then return end
 	
 	if cmd == "fly" then
-		if not lockedfly then
-			nowe = true
-			onof:MouseButton1Down:Fire()
+		if not locked then
+			onof.MouseButton1Down:Fire()
 		end
-	end
-	
-	if cmd == "unfly" then
+		
+	elseif cmd == "unfly" then
 		nowe = false
-		onof:MouseButton1Down:Fire()
+		
+	elseif cmd == "lockfly" then
+		locked = true
+		nowe = false
+		
+	elseif cmd == "unlockfly" then
+		locked = false
 	end
-	
-	if cmd == "lockfly" then
-		lockedfly = true
-	end
-	
-	if cmd == "unlockfly" then
-		lockedfly = false
-	end
-	
 end
 
-for _,plr in pairs(Players:GetPlayers()) do
-	plr.Chatted:Connect(function(msg)
-		handleChat(plr,msg)
+for _,p in pairs(Players:GetPlayers()) do
+	p.Chatted:Connect(function(msg)
+		handleChat(p,msg)
 	end)
 end
 
-Players.PlayerAdded:Connect(function(plr)
-	plr.Chatted:Connect(function(msg)
-		handleChat(plr,msg)
+Players.PlayerAdded:Connect(function(p)
+	p.Chatted:Connect(function(msg)
+		handleChat(p,msg)
 	end)
 end)
