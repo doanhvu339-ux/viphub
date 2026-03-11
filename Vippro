@@ -213,7 +213,7 @@ local function oneClick(text,y,url)
         b.Text = text.." (LOADED)"
         b.BackgroundColor3 = Color3.fromRGB(220,220,220)
     end)
-end)
+end
 
 addScriptButton("FlyGui",20,20,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/flyv3")
 addScriptButton("Infinite Yield",20,70,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/flyv3")
