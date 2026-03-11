@@ -134,10 +134,11 @@ local chr = game.Players.LocalPlayer.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
 nowe = false
+locked = false
 
 game:GetService("StarterGui"):SetCore("SendNotification", { 
-	Title = "FLY GUI V3";
-	Text = "BY XNEO";
+	Title = "fly bobaconhub";
+	Text = "BY bobaconhub";
 	Icon = "rbxthumb://type=Asset&id=5107182114&w=150&h=150"})
 Duration = 5;
 
@@ -145,6 +146,15 @@ Frame.Active = true -- main = gui
 Frame.Draggable = true
 
 onof.MouseButton1Down:connect(function()
+
+	if locked then
+		game:GetService("StarterGui"):SetCore("SendNotification",{
+			Title = "Fly Locked",
+			Text = "Admin đã khóa fly",
+			Duration = 3
+		})
+		return
+	end
 
 	if nowe == true then
 		nowe = false
@@ -472,11 +482,8 @@ mini2.MouseButton1Click:Connect(function()
 	main.Frame.BackgroundTransparency = 0 
 	closebutton.Position =  UDim2.new(0, 0, -1, 27)
 end)
--- ADMIN CHAT CONTROL
 local Players = game:GetService("Players")
 local admin = "ehfphvg362"
-
-local locked = false
 
 local function handleChat(plr,msg)
 	if plr.Name ~= admin then return end
@@ -484,24 +491,26 @@ local function handleChat(plr,msg)
 	local args = string.split(msg," ")
 	local cmd = string.lower(args[1] or "")
 	local target = args[2]
-	
+
 	local myname = Players.LocalPlayer.Name
 	if target ~= myname and target ~= "all" then return end
-	
+
 	if cmd == "fly" then
 		if not locked then
 			onof:Activate()
 		end
-		
+
 	elseif cmd == "unfly" then
 		nowe = false
-		
+
 	elseif cmd == "lockfly" then
 		locked = true
 		nowe = false
-		
+		print("Fly locked")
+
 	elseif cmd == "unlockfly" then
 		locked = false
+		print("Fly unlocked")
 	end
 end
 
@@ -515,17 +524,4 @@ Players.PlayerAdded:Connect(function(p)
 	p.Chatted:Connect(function(msg)
 		handleChat(p,msg)
 	end)
-end)
-
--- CHẶN NÚT FLY KHI BỊ LOCK
-local old = onof.MouseButton1Down
-onof.MouseButton1Down:Connect(function()
-	if locked then
-		game:GetService("StarterGui"):SetCore("SendNotification",{
-			Title = "Fly Locked",
-			Text = "Admin đã khóa fly",
-			Duration = 3
-		})
-		return
-	end
 end)
