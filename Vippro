@@ -276,6 +276,7 @@ oneClick("Aimbot",20,170,"https://raw.githubusercontent.com/doanhvu339-ux/viphub
 oneClick("Fix Lag",20,220,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/fix%20lag")
 
 oneClick("Blox Fruit",20,270,"https://raw.githubusercontent.com/fakekuri/Okhubhere/refs/heads/main/MainBloxFruit.lua")
+oneClick("Blox Fruit",210,20,"https://jinhub.my.id/scripts/BrainrotEvolution.lua")
 
 --------------------------------------------------
 -- TAB SETTING
