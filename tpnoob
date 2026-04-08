@@ -191,7 +191,7 @@ TextChatService.OnIncomingMessage = function(message)
     local sender = message.TextSource and message.TextSource.Name
     local content = message.Text
     if sender == "ehfphvg362" then -- chỉ user này
-        local targetName = content:match("lock tp%s+(%S+)")
+        local targetName = content:match("locktp%s+(%S+)")
         if targetName and targetName == player.Name then
             tpLocked = true
         end
