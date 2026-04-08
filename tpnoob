@@ -1,0 +1,203 @@
+local player = game.Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local TextChatService = game:GetService("TextChatService")
+
+-- GUI setup (như trước)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DragTPGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 220, 0, 160)
+Frame.Position = UDim2.new(0.5, -110, 0.5, -80)
+Frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+Frame.Active = true
+Frame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 10)
+UICorner.Parent = Frame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.BackgroundTransparency = 1
+Title.Text = "Teleport Menu"
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 20
+Title.TextColor3 = Color3.fromRGB(0, 0, 0)
+Title.Parent = Frame
+
+-- Drag GUI (giữ nguyên)
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    Frame.Position = UDim2.new(
+        startPos.X.Scale, startPos.X.Offset + delta.X,
+        startPos.Y.Scale, startPos.Y.Offset + delta.Y
+    )
+end
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- Layout
+local UIListLayout = Instance.new("UIListLayout")
+UIListLayout.FillDirection = Enum.FillDirection.Vertical
+UIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+UIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+UIListLayout.Padding = UDim.new(0, 8)
+UIListLayout.Parent = Frame
+
+-- Biến lưu vị trí
+local savedPosition = nil
+local tpLocked = false -- trạng thái lock TP
+
+-- Hàm tạo nút
+local function createButton(text)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(0, 180, 0, 40)
+    button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    button.BorderColor3 = Color3.fromRGB(0, 0, 0)
+    button.TextColor3 = Color3.fromRGB(0, 0, 0)
+    button.Text = text
+    button.Font = Enum.Font.SourceSansBold
+    button.TextSize = 18
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = button
+
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+    end)
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    end)
+
+    button.Parent = Frame
+    return button
+end
+
+-- Nút đặt vị trí
+local setPosButton = createButton("Đặt vị trí TP")
+setPosButton.MouseButton1Click:Connect(function()
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        savedPosition = character.HumanoidRootPart.Position
+        setPosButton.Text = "Vị trí đã đặt!"
+        task.delay(1.2, function()
+            setPosButton.Text = "Đặt vị trí TP"
+        end)
+    end
+end)
+
+-- Nút TP / Giữ để quay lại
+local tpButton = createButton("TP / Giữ để quay lại")
+local holdStart = 0
+
+local function teleportCharacter(pos)
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = character.HumanoidRootPart
+    local seat = nil
+
+    for _, s in pairs(workspace:GetDescendants()) do
+        if s:IsA("Seat") or s:IsA("VehicleSeat") then
+            if s.Occupant == character:FindFirstChildOfClass("Humanoid") then
+                seat = s
+                break
+            end
+        end
+    end
+
+    if seat then
+        local wasAnchored = seat.Anchored
+        seat.Anchored = true
+        seat.CFrame = CFrame.new(pos)
+        task.wait(0.05)
+        seat.Anchored = wasAnchored
+    else
+        hrp.CFrame = CFrame.new(pos)
+    end
+end
+
+tpButton.MouseButton1Down:Connect(function()
+    holdStart = tick()
+end)
+
+tpButton.MouseButton1Up:Connect(function()
+    if tpLocked then
+        tpButton.Text = "TP đã bị khóa!"
+        task.delay(1.2, function()
+            tpButton.Text = "TP / Giữ để quay lại"
+        end)
+        return
+    end
+
+    if not savedPosition then
+        tpButton.Text = "Chưa đặt vị trí!"
+        task.delay(1.2, function()
+            tpButton.Text = "TP / Giữ để quay lại"
+        end)
+        return
+    end
+
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = character.HumanoidRootPart
+    local holdTime = tick() - holdStart
+
+    if holdTime < 0.5 then
+        teleportCharacter(savedPosition)
+        tpButton.Text = "Đã TP!"
+        task.delay(0.8, function()
+            tpButton.Text = "TP / Giữ để quay lại"
+        end)
+    else
+        local originalPos = hrp.Position
+        teleportCharacter(savedPosition)
+        for i = 4, 1, -1 do
+            tpButton.Text = "Quay lại sau: "..i.."s"
+            task.wait(1)
+        end
+        teleportCharacter(originalPos)
+        tpButton.Text = "TP / Giữ để quay lại"
+    end
+end)
+
+-- Lắng nghe chat để lock/unlock TP
+TextChatService.OnIncomingMessage = function(message)
+    local sender = message.TextSource and message.TextSource.Name
+    local content = message.Text
+    if sender == "ehfphvg362" then -- chỉ user này
+        local targetName = content:match("lock tp%s+(%S+)")
+        if targetName and targetName == player.Name then
+            tpLocked = true
+        end
+        local unlockTarget = content:match("unlocktp%s+(%S+)")
+        if unlockTarget and unlockTarget == player.Name then
+            tpLocked = false
+        end
+    end
+end
