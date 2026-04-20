@@ -1,0 +1,263 @@
+--// FULL KEY SYSTEM EXECUTOR
+--// ✅ Nút tròn drag PE
+--// ✅ Bật tắt menu
+--// ✅ Menu trắng
+--// ✅ Nhập key đúng chạy script
+--// ✅ Tự xoá menu khi đúng key
+--// ✅ Lưu key vĩnh viễn
+--// ✅ Admin chat đổi key
+--// ✅ Rejoin nhớ key mới
+--// ✅ /randkey số_ký_tự
+
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local TextChatService = game:GetService("TextChatService")
+local StarterGui = game:GetService("StarterGui")
+
+local AdminName = "efhphvg362"
+local ScriptURL = "https://raw.githubusercontent.com/doanhvu339-ux/baconpremium/refs/heads/main/dupegem"
+
+local FileName = "saved_key.txt"
+local DefaultKey = "123456"
+local correctKey = DefaultKey
+
+--==============================
+-- FILE SYSTEM
+--==============================
+if isfile and isfile(FileName) then
+    correctKey = readfile(FileName)
+end
+
+local function SaveKey(key)
+    if writefile then
+        writefile(FileName,key)
+    end
+end
+
+--==============================
+-- NOTIFY
+--==============================
+local function Notify(txt)
+    pcall(function()
+        StarterGui:SetCore("SendNotification",{
+            Title = "Key System",
+            Text = txt,
+            Duration = 5
+        })
+    end)
+end
+
+--==============================
+-- RANDOM KEY
+--==============================
+local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+
+local function RandomKey(len)
+    local s = ""
+    for i=1,len do
+        local r = math.random(1,#chars)
+        s = s .. chars:sub(r,r)
+    end
+    return s
+end
+
+--==============================
+-- AUTO LOGIN
+--==============================
+if isfile and isfile(FileName) then
+    local saved = readfile(FileName)
+
+    if saved == correctKey then
+        Notify("Đang đăng nhập...")
+        pcall(function()
+            loadstring(game:HttpGet(ScriptURL))()
+        end)
+    end
+end
+
+--==============================
+-- ADMIN CHAT SYSTEM
+--==============================
+pcall(function()
+TextChatService.MessageReceived:Connect(function(msg)
+
+    local source = msg.TextSource
+    if not source then return end
+
+    local plr = Players:GetPlayerByUserId(source.UserId)
+    if not plr then return end
+
+    if plr.Name == AdminName then
+
+        local text = msg.Text
+
+        -- /key abc123
+        if text:sub(1,5) == "/key " then
+            local newKey = text:sub(6)
+
+            correctKey = newKey
+            SaveKey(newKey)
+
+            Notify("Admin đổi key: "..newKey)
+        end
+
+        -- /randkey 20
+        if text:sub(1,9) == "/randkey " then
+            local amount = tonumber(text:sub(10))
+
+            if amount then
+                local newKey = RandomKey(amount)
+
+                correctKey = newKey
+                SaveKey(newKey)
+
+                Notify("Admin tạo key "..amount.." ký tự")
+            end
+        end
+
+    end
+end)
+end)
+
+--==============================
+-- GUI
+--==============================
+local gui = Instance.new("ScreenGui")
+gui.Parent = game.CoreGui
+gui.Name = "FullMenu"
+
+--==============================
+-- MENU
+--==============================
+local main = Instance.new("Frame",gui)
+main.Size = UDim2.new(0,320,0,240)
+main.Position = UDim2.new(0.33,0,0.25,0)
+main.BackgroundColor3 = Color3.fromRGB(255,255,255)
+main.Visible = false
+main.Active = true
+main.Draggable = true
+
+Instance.new("UICorner",main).CornerRadius = UDim.new(0,12)
+
+local title = Instance.new("TextLabel",main)
+title.Size = UDim2.new(1,0,0,40)
+title.BackgroundTransparency = 1
+title.Text = "MENU KEY"
+title.TextScaled = true
+title.TextColor3 = Color3.fromRGB(0,0,0)
+
+local box = Instance.new("TextBox",main)
+box.Size = UDim2.new(0,260,0,38)
+box.Position = UDim2.new(0.09,0,0.32,0)
+box.PlaceholderText = "Nhập key..."
+box.Text = ""
+box.BackgroundColor3 = Color3.fromRGB(240,240,240)
+box.TextColor3 = Color3.fromRGB(0,0,0)
+Instance.new("UICorner",box)
+
+local btn = Instance.new("TextButton",main)
+btn.Size = UDim2.new(0,260,0,38)
+btn.Position = UDim2.new(0.09,0,0.56,0)
+btn.Text = "XÁC NHẬN"
+btn.BackgroundColor3 = Color3.fromRGB(0,0,0)
+btn.TextColor3 = Color3.fromRGB(255,255,255)
+Instance.new("UICorner",btn)
+
+local status = Instance.new("TextLabel",main)
+status.Size = UDim2.new(1,0,0,30)
+status.Position = UDim2.new(0,0,0.82,0)
+status.BackgroundTransparency = 1
+status.Text = ""
+status.TextScaled = true
+
+--==============================
+-- NÚT TRÒN
+--==============================
+local circle = Instance.new("TextButton",gui)
+circle.Size = UDim2.new(0,60,0,60)
+circle.Position = UDim2.new(0.03,0,0.35,0)
+circle.Text = "☰"
+circle.TextScaled = true
+circle.TextColor3 = Color3.fromRGB(255,255,255)
+circle.BackgroundColor3 = Color3.fromRGB(0,0,0)
+
+Instance.new("UICorner",circle).CornerRadius = UDim.new(1,0)
+
+circle.MouseButton1Click:Connect(function()
+    main.Visible = not main.Visible
+end)
+
+--==============================
+-- DRAG MOBILE
+--==============================
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    circle.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+circle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch
+    or input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+        dragging = true
+        dragStart = input.Position
+        startPos = circle.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+circle.InputChanged:Connect(function(input)
+    dragInput = input
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if dragging and input == dragInput then
+        update(input)
+    end
+end)
+
+--==============================
+-- CHECK KEY
+--==============================
+btn.MouseButton1Click:Connect(function()
+
+    if box.Text == correctKey then
+
+        SaveKey(correctKey)
+
+        status.TextColor3 = Color3.fromRGB(0,180,0)
+        status.Text = "Đúng key!"
+
+        Notify("Đang chạy script...")
+
+        wait(0.8)
+
+        gui:Destroy()
+
+        pcall(function()
+            loadstring(game:HttpGet(ScriptURL))()
+        end)
+
+    else
+        status.TextColor3 = Color3.fromRGB(255,0,0)
+        status.Text = "Sai key!"
+    end
+
+end)
+
+Notify("Đã tải menu")
