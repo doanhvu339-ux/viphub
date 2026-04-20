@@ -4,7 +4,7 @@ getgenv().BaconSettings = {
     SpeedToggle=false, InfJump=false, Noclip=false,
     HitboxAll=false, HitboxTeam=false,
     ESPAll=false, ESPTeam=false,
-    Speed=50, HitboxSize=15
+    Speed=30, HitboxSize=15
 }
 local settings = getgenv().BaconSettings
 
@@ -278,6 +278,8 @@ oneClick("Fix Lag",20,220,"https://raw.githubusercontent.com/doanhvu339-ux/viphu
 oneClick("Blox Fruit",20,270,"https://raw.githubusercontent.com/fakekuri/Okhubhere/refs/heads/main/MainBloxFruit.lua")
 oneClick("Brainrot",210,20,"https://jinhub.my.id/scripts/BrainrotEvolution.lua")
 oneClick("tp",210,70,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/tpnoob")
+oneClick("dupegem",210,120,"https://raw.githubusercontent.com/doanhvu339-ux/viphub/refs/heads/main/keydupegem")
+
 --------------------------------------------------
 -- TAB SETTING
 
